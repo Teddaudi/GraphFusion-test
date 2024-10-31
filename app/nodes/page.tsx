@@ -35,7 +35,7 @@ const Page = () => {
   useEffect(() => {
     fetchGraphData()
 
-  }, [])
+  })
 
   return (
     <>
