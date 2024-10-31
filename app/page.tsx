@@ -31,9 +31,13 @@ const GraphComponent = () => {
             drawBarGraph(fetchedNodes, fetchedLinks); // Draw graph after setting state
             // console.log("Fetched nodes:", fetchedNodes);
             // console.log("Fetched links:", response.data.data.relationships);
-        } catch (error: any) {
-            console.log("Error fetching graph data:", error.message);
-        }
+        }catch (error: unknown) {
+            if (axios.isAxiosError(error)) {
+              console.log(error.message);
+            } else {
+              console.log("An unexpected error occurred:", error);
+            }
+          }
     };
 
     useEffect(() => {

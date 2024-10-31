@@ -17,8 +17,12 @@ const Page = () => {
       console.log("Fetched Data:", data); // Log entire data object
       setNodes(data.nodes);
       setRelationships(data.relationships);
-    } catch (error: any) {
-      console.log(error.message);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        console.log(error.message);
+      } else {
+        console.log("An unexpected error occurred:", error);
+      }
     }
   };
 
