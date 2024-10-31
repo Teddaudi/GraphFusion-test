@@ -1,101 +1,112 @@
-import Image from "next/image";
+"use client";
+import * as d3 from 'd3';
+import axios from 'axios';
+import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 
-export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+type NodeData = {
+    _id: string;
+    name: string;
+    type: string;
+};
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+type LinkData = {
+    from: NodeData;
+    to: NodeData;
+};
+
+const GraphComponent = () => {
+    const svgRef = useRef<SVGSVGElement | null>(null);
+    const [nodes, setNodes] = useState<NodeData[]>([]);
+    const [links, setLinks] = useState<LinkData[]>([]);
+
+    const fetchGraphData = async () => {
+        try {
+            const response = await axios.get('/api/graph/all');
+            const fetchedNodes = response.data.data.nodes;
+            const fetchedLinks = response.data.data.relationships;
+
+            setNodes(fetchedNodes);
+            setLinks(fetchedLinks);
+            drawBarGraph(fetchedNodes, fetchedLinks); // Draw graph after setting state
+            // console.log("Fetched nodes:", fetchedNodes);
+            // console.log("Fetched links:", response.data.data.relationships);
+        } catch (error: any) {
+            console.log("Error fetching graph data:", error.message);
+        }
+    };
+
+    useEffect(() => {
+        fetchGraphData();
+    }, []);
+
+    const drawBarGraph = (nodes: NodeData[], links: LinkData[]) => {
+        if (!svgRef.current) return;
+
+        const svgWidth = 500;
+        const svgHeight = 300;
+        const margin = { top: 20, right: 30, bottom: 40, left: 40 };
+        const width = svgWidth - margin.left - margin.right;
+        const height = svgHeight - margin.top - margin.bottom;
+
+        // Clear previous SVG content
+        d3.select(svgRef.current).selectAll("*").remove();
+
+        const svg = d3.select(svgRef.current)
+            .attr("width", svgWidth)
+            .attr("height", svgHeight);
+
+        // Count outgoing links for each node
+        const linkCounts = nodes.map(node => ({
+            name: node.name,
+            count: links ? links.filter(link => link.from._id === node._id).length : 0,
+        }));
+
+        const x = d3.scaleBand()
+            .domain(linkCounts.map(d => d.name))
+            .range([margin.left, width])
+            .padding(0.1);
+
+        const y = d3.scaleLinear()
+            .domain([0, d3.max(linkCounts, d => d.count) || 0])
+            .range([height, margin.top]);
+
+        // Create x-axis
+        svg.append("g")
+            .attr("transform", `translate(0,${height})`)
+            .call(d3.axisBottom(x))
+            .selectAll("text")
+            .attr("transform", "translate(-10, 0) rotate(-45)")
+            .style("text-anchor", "end");
+
+        // Create y-axis
+        svg.append("g")
+            .attr("transform", `translate(${margin.left},0)`)
+            .call(d3.axisLeft(y));
+
+        // Create bars
+        svg.selectAll(".bar")
+            .data(linkCounts)
+            .enter()
+            .append("rect")
+            .attr("class", "bar")
+            .attr("x", d => x(d.name) || 0)
+            .attr("y", d => y(d.count))
+            .attr("width", x.bandwidth())
+            .attr("height", d => height - y(d.count))
+            .attr("fill", "steelblue");
+    };
+
+    return (
+        <div className="flex flex-col items-center space-y-4">
+           
+            <Link
+                className="bg-red-600 hover:bg-red-700 mt-4 text-white font-medium px-4 py-2 rounded-lg transition-colors duration-200"
+
+                href={"/nodes"} target='_blank'>Data</Link>
+            <svg ref={svgRef}></svg>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
-}
+    );
+};
+
+export default GraphComponent;
