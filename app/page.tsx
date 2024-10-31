@@ -39,7 +39,7 @@ const GraphComponent = () => {
             }
           }
     };
-
+console.log(nodes,links)
     useEffect(() => {
         fetchGraphData();
     });
