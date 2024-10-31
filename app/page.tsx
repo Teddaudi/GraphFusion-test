@@ -42,7 +42,7 @@ const GraphComponent = () => {
 
     useEffect(() => {
         fetchGraphData();
-    },[links,nodes]);
+    });
 
     const drawBarGraph = (nodes: NodeData[], links: LinkData[]) => {
         if (!svgRef.current) return;

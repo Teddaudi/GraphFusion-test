@@ -48,7 +48,7 @@ const Page = () => {
           }
           {/* Nodes Section */}
           <h2 className="text-xl font-medium text-gray-700 mb-4">Nodes</h2>
-          {nodes.map((node) => (
+          {nodes.map((node:any) => (
             <div
               key={node._id}
               className="flex flex-col sm:flex-row sm:justify-between items-center text-center my-3 p-4 bg-gray-50 rounded-lg shadow-sm"
@@ -72,7 +72,7 @@ const Page = () => {
           {showRelationship && <Popup />
           }
           <h2 className="text-xl font-medium text-gray-700 mt-8 mb-4">Relationships</h2>
-          {relationships.map((relationship) => (
+          {relationships.map((relationship:any) => (
             <div
               className="my-3 p-4 bg-gray-50 rounded-lg shadow-sm"
               key={relationship._id}
