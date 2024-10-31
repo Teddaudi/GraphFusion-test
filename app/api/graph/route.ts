@@ -1,11 +1,11 @@
 import { connect } from "@/dbConfig/dbConfig";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import Node from "@/models/nodeModel";
 import Relationship from "@/models/relationshipModel";
 
 connect();
 
-export async function GET(request: NextRequest) {
+export async function GET() {
     try {
         // Select only "_id", "name", and "type" fields in Node and Relationship queries
         const nodes = await Node.find({}).select("_id name type");
