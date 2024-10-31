@@ -4,11 +4,29 @@ import React, { useEffect, useState } from 'react'
 import Pop from '../../util/pop'
 import Popup from '../../util/modal'
 
+interface Node {
+  _id: string;
+  type: string;
+  name: string;
+}
+
+interface Relationship {
+  _id: string;
+  from: {
+    name: string;
+    type: string;
+  };
+  to: {
+    name: string;
+    type: string;
+  };
+}
+
 const Page = () => {
-  const [nodes, setNodes] = useState([])
-  const [relationships, setRelationships] = useState([])
-  const [showPop, setShowPop] = useState(false)
-  const [showRelationship, setShowRelationship] = useState(false)
+  const [nodes, setNodes] = useState<Node[]>([]);
+  const [relationships, setRelationships] = useState<Relationship[]>([]);
+  const [showPop, setShowPop] = useState(false);
+  const [showRelationship, setShowRelationship] = useState(false);
 
   const fetchGraphData = async () => {
     try {
@@ -32,10 +50,10 @@ const Page = () => {
   function handleRelationship() {
     setShowRelationship(prev => !prev)
   }
+  
   useEffect(() => {
     fetchGraphData()
-
-  })
+  }, []); // Add dependency array to run once
 
   return (
     <>
@@ -44,11 +62,9 @@ const Page = () => {
           <h1 className="text-2xl font-semibold text-center text-gray-800 mb-6">Graph Data</h1>
 
           <button className='bg-green-300 hover:bg-green-500 px-4 py-2 rounded-md cursor-pointer text-white mb-2' onClick={handleNode}>Create Node</button>
-          {showPop && <Pop />
-          }
-          {/* Nodes Section */}
+          {showPop && <Pop />}
           <h2 className="text-xl font-medium text-gray-700 mb-4">Nodes</h2>
-          {nodes.map((node:any) => (
+          {nodes.map((node) => (
             <div
               key={node._id}
               className="flex flex-col sm:flex-row sm:justify-between items-center text-center my-3 p-4 bg-gray-50 rounded-lg shadow-sm"
@@ -65,14 +81,10 @@ const Page = () => {
             </div>
           ))}
 
-
-
-          {/* Relationships Section */}
           <button onClick={handleRelationship} className='bg-green-300 hover:bg-green-500 px-4 py-2 rounded-md cursor-pointer text-white mb-2'>Create Relationships</button>
-          {showRelationship && <Popup />
-          }
+          {showRelationship && <Popup />}
           <h2 className="text-xl font-medium text-gray-700 mt-8 mb-4">Relationships</h2>
-          {relationships.map((relationship:any) => (
+          {relationships.map((relationship) => (
             <div
               className="my-3 p-4 bg-gray-50 rounded-lg shadow-sm"
               key={relationship._id}
@@ -100,4 +112,4 @@ const Page = () => {
   )
 }
 
-export default Page
+export default Page;
